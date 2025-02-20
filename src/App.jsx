@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import axios from "axios";
 
 const App = () => {
     const [todos, setTodos] = useState([]);
+    const [newTodo, setNewTodo] = useState("");
+    const [idCounter, setIdCounter] = useState(1);
 
     useEffect(() => {
         axios
@@ -18,9 +20,29 @@ const App = () => {
     const toggleComplete = (id) => {
         setTodos(
             todos.map((todo) =>
-                todo.id === id ? { ...todo, completed: !todo.completed } : todo
+                todo.id === id ? {...todo, completed: !todo.completed} : todo
             )
         );
+    };
+
+    const addTodo = (e) => {
+        e.preventDefault();
+
+        if (!newTodo.trim()) return;
+
+        const newTodoItem = {
+            id: idCounter,
+            todo: newTodo,
+            completed: false,
+        };
+
+        setTodos([...todos, newTodoItem]);
+        setIdCounter(idCounter + 1);
+        setNewTodo("");
+    };
+
+    const deleteTodo = (id) => {
+        setTodos(todos.filter((todo) => todo.id !== id));
     };
 
     return (
@@ -28,6 +50,23 @@ const App = () => {
             <h1 className="text-4xl font-bold">
                 Todo <span className="text-teal-400">List</span>
             </h1>
+
+            <form onSubmit={addTodo} className="mt-5 flex gap-3">
+                <input
+                    type="text"
+                    placeholder="Add a new task"
+                    className="w-64 h-11 px-3 border border-black rounded-3xl outline-none "
+                    value={newTodo}
+                    onChange={(e) => setNewTodo(e.target.value)}
+                />
+                <button
+                    type="submit"
+                    className="w-10 h-10 bg-black text-white text-xl rounded-full cursor-pointer"
+                >
+                    +
+                </button>
+            </form>
+
             <section className="mt-7 flex flex-col items-center gap-3">
                 {todos.map((todo) => (
                     <div
@@ -45,6 +84,12 @@ const App = () => {
                             />
                             <p className="text-sm">{todo.todo}</p>
                         </div>
+                        <button
+                            onClick={() => deleteTodo(todo.id)}
+                            className="text-red-500"
+                        >
+                            ❌
+                        </button>
                     </div>
                 ))}
             </section>
