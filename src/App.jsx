@@ -1,10 +1,12 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const App = () => {
     const [todos, setTodos] = useState([]);
     const [newTodo, setNewTodo] = useState("");
     const [idCounter, setIdCounter] = useState(1);
+    const [editingTodo, setEditingTodo] = useState(null);
+    const [editText, setEditText] = useState("");
 
     useEffect(() => {
         axios
@@ -20,7 +22,7 @@ const App = () => {
     const toggleComplete = (id) => {
         setTodos(
             todos.map((todo) =>
-                todo.id === id ? {...todo, completed: !todo.completed} : todo
+                todo.id === id ? { ...todo, completed: !todo.completed } : todo
             )
         );
     };
@@ -45,6 +47,21 @@ const App = () => {
         setTodos(todos.filter((todo) => todo.id !== id));
     };
 
+    const startEditing = (todo) => {
+        setEditingTodo(todo.id);
+        setEditText(todo.todo);
+    };
+
+    const saveEdit = (id) => {
+        setTodos(
+            todos.map((todo) =>
+                todo.id === id ? { ...todo, todo: editText } : todo
+            )
+        );
+        setEditingTodo(null);
+        setEditText("");
+    };
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen">
             <h1 className="text-4xl font-bold">
@@ -55,13 +72,13 @@ const App = () => {
                 <input
                     type="text"
                     placeholder="Add a new task"
-                    className="w-64 h-11 px-3 border border-black rounded-3xl outline-none "
+                    className="w-64 h-11 px-3 border border-black rounded-3xl outline-none"
                     value={newTodo}
                     onChange={(e) => setNewTodo(e.target.value)}
                 />
                 <button
                     type="submit"
-                    className="w-10 h-10 bg-black text-white text-xl rounded-full cursor-pointer"
+                    className="w-10 h-10 bg-black text-white text-xl rounded-full"
                 >
                     +
                 </button>
@@ -82,14 +99,41 @@ const App = () => {
                                 onChange={() => toggleComplete(todo.id)}
                                 className="mr-3"
                             />
-                            <p className="text-sm">{todo.todo}</p>
+                            {editingTodo === todo.id ? (
+                                <input
+                                    type="text"
+                                    value={editText}
+                                    onChange={(e) => setEditText(e.target.value)}
+                                    className="text-sm border-b border-black"
+                                />
+                            ) : (
+                                <p className="text-sm">{todo.todo}</p>
+                            )}
                         </div>
-                        <button
-                            onClick={() => deleteTodo(todo.id)}
-                            className="text-red-500"
-                        >
-                            ❌
-                        </button>
+
+                        <div className="flex items-center gap-2">
+                            {editingTodo === todo.id ? (
+                                <button
+                                    onClick={() => saveEdit(todo.id)}
+                                    className="text-blue-500"
+                                >
+                                    Save
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => startEditing(todo)}
+                                    className="text-blue-500 cursor-pointer"
+                                >
+                                    Edit
+                                </button>
+                            )}
+                            <button
+                                onClick={() => deleteTodo(todo.id)}
+                                className="text-red-500"
+                            >
+                                ❌
+                            </button>
+                        </div>
                     </div>
                 ))}
             </section>
